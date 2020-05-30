@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>canvas_cut</title>
+    <script src="../js/jquery_2.1.1.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .pickImageButton {
+            background-color: #bebebe;
+            display: inline-block;
+            border-radius: 5px;
+            padding: 5px;
+            margin-top: 1rem;
+            margin-right: 1rem;
+        }
+
+        .pickImageButton:hover {
+            cursor: pointer;
+        }
+
+        .left {
+            float: left;
+            width: 8rem;
+            text-align: right;
+        }
+
+        .right {
+            float: left;
+        }
+
+        textarea {
+            resize: none;
+            margin-top: 1rem;
+        }
+
+        #cutFather {
+            width: 410px;
+            height: 410px;
+            background-color: #000;
+            overflow: auto;
+            position: relative;
+        }
+
+        #image2Cut {
+            margin-top: 25px;
+            margin-left: 25px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="div2Father" style="padding:2rem;">
+    <div style="height:2rem"></div>
+    <div style="width:100%;height:220px;">
+        <div class="left">
+            cut ok：
+            <br>
+            <div class="pickImageButton" onclick="startPickImage();">pick file</div>
+        </div>
+        <div class="right">
+            <img id="img2Portrait">
+        </div>
+    </div>
+
+    <input type="file" id="input2Pic" onchange="showImageByFile(this)" accept="image/jpeg,image/jpg,imamge/png" hidden>
+
+    <div flag2PickImage id="tips2Cut" style="height:3rem;line-height:1rem;">
+        请在图片上点击左键不松手然后拖动鼠标即可选取剪切区域.
+    </div>
+    <div flag2PickImage id="cutFather">
+        <img id="image2Cut" draggable="false" crossorigin="anonymous"/>
+    </div>
+    <button flag2PickImage onclick="confirmCut();">confirm</button>
+
+    <div style="width:100%;height:2rem;"></div>
+</div>
+</body>
+</html>
+<script>
+
+    $(function () {
+        $("[flag2PickImage]").hide();
+        addCutListener();
+    });
+
+    function startPickImage() {
+        $("[flag2PickImage]").show();
+        $('#input2Pic').click();
+        $("#tips2Cut").text("请在图片上点击左键不松手然后拖动鼠标即可选取剪切区域");
+    }
+
+    var clickFirstX;
+    var clickFirstY;
+    var clickSecondX;
+    var clickSecondY;
+    var stopMove = true;
+    var file2CutOK;
+    var imageTrueWidth;
+    var imageTrueHeight;
+    var imageTrueScale;
+
+    function addCutListener() {
+        var $divTmp = $("<div id='tips2Frame'></div>");
+        $divTmp.css({
+            "position": "absolute",
+            "width": "0px",
+            "height": "0px",
+            "border": "1px solid #000",
+            "box-sizing": "border-box",
+            "pointer-events": "none",
+        });
+        $("#cutFather").append($divTmp);
+        var image2Cut = document.getElementById("image2Cut");
+        image2Cut.addEventListener('mousedown', function (event) {
+            $divTmp.css({
+                "width": "0px",
+                "height": "0px",
+            });
+            clickFirstX = event.offsetX;
+            clickFirstY = event.offsetY;
+            stopMove = false;
+        });
+        image2Cut.addEventListener('mousemove', function (event) {
+            if (!stopMove) {
+                clickSecondX = event.offsetX;
+                clickSecondY = event.offsetY;
+
+                var widthTmp = Math.abs(event.offsetX - clickFirstX);
+                var heightTmp = Math.abs(event.offsetY - clickFirstY);
+
+                $divTmp.css({
+                    "width": widthTmp + "px",
+                    "height": heightTmp + "px",
+                    "left": 25 + (event.offsetX > clickFirstX ? clickFirstX : event.offsetX) + "px",
+                    "top": 25 + (event.offsetY > clickFirstY ? clickFirstY : event.offsetY) + "px",
+                });
+
+                $("#tips2Cut").html("宽: " + widthTmp + " 高： " + heightTmp + "<br>" +
+                    "X1: " + clickFirstX + " Y1: " + clickFirstY + "<br>" +
+                    "X2: " + event.offsetX + " Y2: " + event.offsetY);
+            }
+        });
+        image2Cut.addEventListener('mouseup', function (event) {
+            stopMove = true;
+        });
+    }
+
+    function confirmCut() {
+        var widthTmp = Math.abs(clickSecondX - clickFirstX);
+        var heightTmp = Math.abs(clickSecondY - clickFirstY);
+
+        var myCanvas = document.createElement('canvas');
+        var anw = document.createAttribute("width");
+        anw.nodeValue = widthTmp;
+        var anh = document.createAttribute("height");
+        anh.nodeValue = heightTmp;
+        myCanvas.setAttributeNode(anw);
+        myCanvas.setAttributeNode(anh);
+
+        var myImg = document.getElementById("image2Cut");
+        var ctx = myCanvas.getContext("2d");
+        var imageXStart = clickFirstX;
+        if (clickFirstX > clickSecondX) {
+            imageXStart = clickSecondX;
+        }
+        var imageYStart = clickFirstY;
+        if (clickFirstY > clickSecondY) {
+            imageYStart = clickSecondY;
+        }
+        //这里注意要用 图片真实大小的x、y  长宽。。。十分坑爹！
+        ctx.drawImage(myImg,
+            imageXStart / imageTrueScale,
+            imageYStart / imageTrueScale,
+            widthTmp / imageTrueScale,
+            heightTmp / imageTrueScale,
+            0,
+            0,
+            widthTmp,
+            heightTmp);
+
+        var $portrait = $("#img2Portrait");
+        $portrait.attr("src", myCanvas.toDataURL());
+        var scale = widthTmp / heightTmp;
+        if (widthTmp > heightTmp) {
+            $portrait.css({width: 200 + "px", height: 200 / scale + "px"});
+        } else {
+            $portrait.css({width: 200 * scale + "px", height: "200px"});
+        }
+        file2CutOK = dataURL2Blob(myCanvas.toDataURL());
+        $("[flag2PickImage]").hide();
+        $("#tips2Frame").css({
+            "width": "0px",
+            "height": "0px",
+        });
+        //清空画布
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+    }
+
+    function showImageByFile() {
+        var file = document.getElementById("input2Pic").files[0];
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = function (e) {
+            var imgTmp = new Image();
+            imgTmp.src = e.target.result;
+            setTimeout(function () {
+                if (imgTmp.complete) {
+                    var width = imageTrueWidth = imgTmp.width;
+                    var height = imageTrueHeight = imgTmp.height;
+                    var $imgTmp = $('#image2Cut');
+                    $imgTmp.attr('src', e.target.result);
+                    var scale = width / height;
+                    if (width > height) {
+                        $imgTmp.css({width: 350 * scale + "px", height: "350px"});
+                        $imgTmp.attr("width", 350 * scale);
+                        $imgTmp.attr("height", 350);
+                        imageTrueScale = 350 / imageTrueHeight;
+                    } else {
+                        $imgTmp.css({width: "350px", height: (350 / scale) + "px"});
+                        $imgTmp.attr("width", 350);
+                        $imgTmp.attr("height", 350 / scale);
+                        imageTrueScale = 350 / imageTrueWidth;
+                    }
+                } else {
+                    showImageByFile();
+                    return;
+                }
+            }, 500);
+        };
+    }
+
+</script>

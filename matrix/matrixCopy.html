@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="height=device-height,width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no"/>
+    <title>Matrix</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        .div2CodeRain {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: -10;
+        }
+
+        .codeRainLetter {
+            font-size: 1rem;
+            width: 1rem;
+            height: 1rem;
+            line-height: 1rem;
+            color: #66CD00;
+            font-weight: bold;
+            float: left;
+            text-align: center;
+        }
+
+        #motto {
+            color: #54FF9F;
+            width: 20rem;
+            position: fixed;
+            z-index: 2;
+            left: 3rem;
+            top: 3rem;
+        }
+
+        .mottoLetter {
+            font-size: 10rem;
+            line-height: 10rem;
+        }
+    </style>
+</head>
+<body>
+<div id="motto">
+    <div class="mottoLetter">人码</div>
+    <div class="mottoLetter">合一</div>
+</div>
+</body>
+</html>
+<script>
+    window.onload = function () {
+        startCodeRain();
+    };
+
+    var letters = [
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "-", "=",
+        "[", "]", "{", "}", ";", ":", "'", "\"", "\\", "|", ",", ".", "/", "<", ">", "?"];
+
+    function startCodeRain() {
+        window.fontSize = parseInt(window.getComputedStyle(document.getElementsByTagName("body")[0]).fontSize);
+        window.amount = parseInt(window.innerWidth / fontSize) * parseInt(window.innerHeight / fontSize);
+        window.total = letters.length;
+        window.method2Amount = 10;
+        window.method1Count = 0;
+
+        var div2CodeRain = document.createElement("div");
+        div2CodeRain.setAttribute("id", "div2CodeRain");
+        div2CodeRain.setAttribute("class", "div2CodeRain");
+        document.getElementsByTagName("body")[0].appendChild(div2CodeRain);
+
+        for (var i = 0; i < amount; i++) {
+            var divTmp = document.createElement("div");
+            divTmp.setAttribute("id", "test" + i);
+            divTmp.setAttribute("class", "codeRainLetter");
+            var index = myRandom(0, total - 1);
+            divTmp.innerText = letters[index];
+            div2CodeRain.appendChild(divTmp);
+        }
+
+        changeLetters02();
+        for (var i = 0; i < method2Amount; i++) {
+            changeLetters03();
+        }
+    }
+
+
+    function changeLetters01() {
+        if (method1Count == amount - 1) method1Count = 0;
+        var divTmp01 = document.getElementById("test" + method1Count);
+        var numberIndexTmp01 = myRandom(0, total - 1);
+        divTmp01.innerText = letters[numberIndexTmp01];
+
+        var divTmp02 = document.getElementById("test" + (amount - 1 - method1Count));
+        var numberIndexTmp02 = myRandom(0, total - 1);
+        divTmp02.innerText = letters[numberIndexTmp02];
+
+        method1Count++;
+        setTimeout(changeLetters01, 1);
+    }
+
+    function changeLetters02() {
+        if (method1Count == amount - 1) method1Count = 0;
+        var divTmp01 = document.getElementById("test" + method1Count);
+        var numberIndexTmp01 = myRandom(0, total - 1);
+        divTmp01.innerText = letters[numberIndexTmp01];
+        method1Count++;
+        setTimeout(changeLetters01, 1);
+    }
+
+    function changeLetters03() {
+        var letterIndexTmp = myRandom(0, amount - 1);
+        var divTmp = document.getElementById("test" + letterIndexTmp);
+        var numberIndexTmp = myRandom(0, total - 1);
+        divTmp.innerText = letters[numberIndexTmp];
+        setTimeout(changeLetters03, 1);
+    }
+
+    function myRandom(n, m) {
+        var randomNumber = Math.floor(Math.random() * (m - n + 1) + n);
+        return randomNumber;
+    }
+</script>
